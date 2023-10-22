@@ -1,9 +1,10 @@
 import os
 import os.path
 import time
+from dataclasses import dataclass
 from functools import wraps
 
-from .constants import FILE_SAVEPATH, DEFAULD_SAVEPATH
+from .constants import DEFAULD_SAVEPATH, FILE_SAVEPATH
 from .logger import logger
 
 
@@ -13,7 +14,7 @@ def timeit(func):
         start = time.perf_counter()
         result = func(*args, **kwargs)
         delta = time.perf_counter() - start
-        logger.info(f'总计用时 {delta:.3f}s')
+        logger.info(f'Used time {delta:.3f}s')
 
         return result
 
@@ -43,8 +44,8 @@ def get_rootpath():
     return rootpath
 
 
+@dataclass
 class Hero:
-    def __init__(self, ename, cname, title):
-        self.ename = ename
-        self.cname = cname
-        self.title = title
+    ename: int
+    cname: str
+    title: str

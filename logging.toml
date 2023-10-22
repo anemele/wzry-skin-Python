@@ -1,7 +1,7 @@
 version = 1
 
 [formatters]
-simple.format = '%(asctime)s | %(name)s | %(levelname)-8s | %(message)s'
+simple.format = '%(asctime)s | %(name)s | %(levelname)-5s | %(message)s'
 
 [handlers]
 [handlers.console]
@@ -15,7 +15,7 @@ level = 'ERROR'
 formatter = 'simple'
 stream = 'ext://sys.stderr'
 
-[loggers.foo]
+[loggers.log]
 level = 'DEBUG'
 handlers = ['console']
 propagate = 'yes'
