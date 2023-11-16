@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 API_HEROLIST = 'http://pvp.qq.com/web201605/js/herolist.json'
 API_HEROPAGE = 'https://pvp.qq.com/web201605/herodetail/{hero_id}.shtml'
@@ -18,5 +19,5 @@ XPATH_SKINLIST = '//div[@class="pic-pf"]/ul/@data-imgname'
 REGEX_SKINLIST = re.compile(r'\s*(.+?)\s*(?:(?:&\d+\|)|(?:&\d+)|\|)')
 
 FILE_LOGGER_CONFIG = 'logging.toml'
-FILE_SAVEPATH = 'savepath.txt'
-DEFAULD_SAVEPATH = './wzry-skin'
+FILE_SAVEPATH = Path('savepath.txt')
+DEFAULD_SAVEPATH = Path('./wzry-skin')

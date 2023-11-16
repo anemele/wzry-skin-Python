@@ -1,36 +1,29 @@
-import os
+from pathlib import Path
 
 from .utils import get_rootpath
 
 # 皮肤数量统计
-STATISTIC_RESULT = 'statistic.txt'
+STATISTIC_RESULT = Path('statistic.txt')
 # 从大到小排列（False 是从小到大排列，即皮肤少的在前）
 STATISTIC_REVERSE = False
 # 本地保存目录
 SAVE_PATH = get_rootpath()
 
 
-def get_data():
-    data = dict()
-    for p in os.listdir(SAVE_PATH):
-        tmp = os.path.join(SAVE_PATH, p)
-        data[p] = len(os.listdir(tmp))
+def _count_files(path: Path):
+    count = -1
+    for count, _ in enumerate(path.iterdir()):
+        pass
+    return path.name, count + 1
 
-    sorted_data = sorted(data.items(), key=lambda x: x[1], reverse=STATISTIC_REVERSE)
+
+def get_data():
+    data = map(_count_files, SAVE_PATH.iterdir())
+    sorted_data = sorted(data, key=lambda x: x[1], reverse=STATISTIC_REVERSE)
 
     return sorted_data
 
 
-def res_data(data):
-    ret = []
-    for k, v in data:
-        it = f'{k}:{v}'
-        ret.append(it)
-    return ret
-
-
 def dump_data():
-    data = get_data()
-    data = res_data(data)
-    with open(STATISTIC_RESULT, 'w', encoding='utf-8') as fp:
-        fp.write('\n'.join(data))
+    data = [f'{k}:{v}' for k, v in get_data()]
+    STATISTIC_RESULT.write_text('\n'.join(data), encoding='utf-8')

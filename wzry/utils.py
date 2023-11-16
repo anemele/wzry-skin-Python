@@ -1,8 +1,7 @@
-import os
-import os.path
 import time
 from dataclasses import dataclass
 from functools import wraps
+from pathlib import Path
 
 from .constants import DEFAULD_SAVEPATH, FILE_SAVEPATH
 from .logger import logger
@@ -21,25 +20,22 @@ def timeit(func):
     return wrapper
 
 
-def mkdir(path: str):
-    if not os.path.exists(path):
-        os.makedirs(path)
+def mkdir(path: Path):
+    if not path.exists():
+        path.mkdir()
         logger.info(f'mkdir {path}')
 
 
 def get_rootpath():
-    if os.path.exists(FILE_SAVEPATH):
+    if FILE_SAVEPATH.exists():
         with open(FILE_SAVEPATH) as fp:
-            rootpath = fp.read().strip()
-        if not os.path.exists(rootpath):
-            try:
-                mkdir(rootpath)
-                return rootpath
-            except Exception as e:
-                logger.error(e)
-                rootpath = DEFAULD_SAVEPATH
-    else:
-        rootpath = DEFAULD_SAVEPATH
+            rootpath = Path(fp.read().strip())
+        try:
+            mkdir(rootpath)
+            return rootpath
+        except Exception as e:
+            logger.error(e)
+    rootpath = DEFAULD_SAVEPATH
     mkdir(rootpath)
     return rootpath
 

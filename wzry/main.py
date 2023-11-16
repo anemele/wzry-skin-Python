@@ -1,19 +1,12 @@
 import json
-import os.path
 from concurrent.futures import ThreadPoolExecutor, wait
+from pathlib import Path
 from queue import Queue
 from typing import List
 
-from lxml.etree import HTML
-
-from .constants import (
-    API_HEROLIST,
-    API_HEROPAGE,
-    API_SKINURL,
-    REGEX_SKINLIST,
-    XPATH_SKINLIST,
-)
+from .constants import API_HEROLIST
 from .logger import logger
+from .parser import get_heropage, get_skinlist, get_skinurl
 from .request import get
 from .utils import Hero, get_rootpath, mkdir, timeit
 
@@ -25,16 +18,13 @@ def get_hero_data():
 
 
 def get_skin_data(q: Queue, hero: Hero):
-    url = API_HEROPAGE.format(hero_id=hero.ename)
+    url = get_heropage(hero_id=hero.ename)
     res = get(url)
-    html = HTML(res.content) # type: ignore
-    skinlist = html.xpath(XPATH_SKINLIST)
-    if len(skinlist) == 1:
-        skinlist = REGEX_SKINLIST.findall(skinlist[0])
+    skinlist = get_skinlist(res.content)
     q.put((skinlist, hero))
 
 
-def download_skin(q: Queue, url: str, save_path: str):
+def download_skin(q: Queue, url: str, save_path: Path):
     res = get(url)
     # 非 200 认为请求 404，即该英雄没有更多皮肤了
     if res.status_code != 200:
@@ -42,9 +32,8 @@ def download_skin(q: Queue, url: str, save_path: str):
     q.put((res.content, save_path))
 
 
-def write_skin(content: bytes, save_path: str):
-    with open(save_path, 'wb') as fp:
-        fp.write(content)
+def write_skin(content: bytes, save_path: Path):
+    save_path.write_bytes(content)
     logger.info(f'Saved {save_path}')
 
 
@@ -62,15 +51,20 @@ def thread2(q: Queue):
     queue = Queue()
     with ThreadPoolExecutor() as executor:
         while not q.empty():
+            skinlist: List[str]
+            hero: Hero
             skinlist, hero = q.get()
-            savepath = os.path.join(rootpath, f'{hero.cname}_{hero.title}')
+
+            savepath = rootpath / f'{hero.cname}_{hero.title}'
             mkdir(savepath)
+
             for i, skin in enumerate(skinlist):
-                img_save_path = os.path.join(savepath, f'{i+1}_{skin}.jpg')
-                if os.path.exists(img_save_path):
+                img_save_path = savepath / f'{i+1}_{skin}.jpg'
+                if img_save_path.exists():
                     continue
-                url = API_SKINURL.format(hero_id=hero.ename, skin_id=i + 1)
+                url = get_skinurl(hero_id=hero.ename, skin_id=i + 1)
                 executor.submit(download_skin, queue, url, img_save_path)
+
     return queue
 
 
