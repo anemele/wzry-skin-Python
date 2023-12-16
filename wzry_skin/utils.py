@@ -2,7 +2,6 @@ import time
 from functools import wraps
 from pathlib import Path
 
-from .constants import DEFAULD_SAVEPATH, FILE_SAVEPATH
 from .log import logger
 
 
@@ -23,6 +22,10 @@ def mkdir(path: Path):
     if not path.exists():
         path.mkdir()
         logger.info(f'mkdir {path}')
+
+
+FILE_SAVEPATH = Path('savepath.txt')
+DEFAULD_SAVEPATH = Path('./wzry-skin')
 
 
 def get_rootpath():

@@ -1,5 +1,5 @@
-from .main import main
+from .core import run
 from .statistic import dump_data
 
-main()
+run()
 dump_data()
