@@ -1,14 +1,21 @@
 import json
 from concurrent.futures import ThreadPoolExecutor, wait
+from dataclasses import dataclass
 from pathlib import Path
 from queue import Queue
-from typing import List
 
 from .constants import API_HEROLIST
-from .logger import logger
+from .log import logger
 from .parser import get_heropage, get_skinlist, get_skinurl
 from .request import get
-from .utils import Hero, get_rootpath, mkdir, timeit
+from .utils import get_rootpath, mkdir, timeit
+
+
+@dataclass
+class Hero:
+    ename: int
+    cname: str
+    title: str
 
 
 def get_hero_data():
@@ -34,7 +41,7 @@ def download_skin(q: Queue, url: str, save_path: Path):
 
 def write_skin(content: bytes, save_path: Path):
     save_path.write_bytes(content)
-    logger.info(f'Saved {save_path}')
+    logger.info(f'saved {save_path}')
 
 
 def thread1():
@@ -51,7 +58,7 @@ def thread2(q: Queue):
     queue = Queue()
     with ThreadPoolExecutor() as executor:
         while not q.empty():
-            skinlist: List[str]
+            skinlist: list[str]
             hero: Hero
             skinlist, hero = q.get()
 
@@ -80,4 +87,4 @@ def main():
             task = executor.submit(write_skin, c, s)
             futures.append(task)
     wait(futures)
-    logger.info('Done!')
+    logger.info('done.')

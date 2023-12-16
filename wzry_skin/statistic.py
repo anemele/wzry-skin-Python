@@ -25,5 +25,5 @@ def get_data():
 
 
 def dump_data():
-    data = [f'{k}:{v}' for k, v in get_data()]
-    STATISTIC_RESULT.write_text('\n'.join(data), encoding='utf-8')
+    data = '\n'.join(f'{k}:{v}' for k, v in get_data())
+    STATISTIC_RESULT.write_text(data, encoding='utf-8')

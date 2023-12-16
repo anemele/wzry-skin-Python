@@ -1,12 +1,16 @@
 import requests
+from fake_useragent import FakeUserAgent
 
-from .constants import DEFAULT_TIMEOUT, HEADERS
-from .logger import logger
+DEFAULT_TIMEOUT = 5
 
 _session = requests.Session()
+_session.headers.update(
+    {
+        'User-Agent': FakeUserAgent().random,
+        'Referer': 'https://pvp.qq.com/',
+    }
+)
 
 
 def get(url: str):
-    logger.info(f'Get {url}')
-    res = _session.get(url, headers=HEADERS, timeout=DEFAULT_TIMEOUT)
-    return res
+    return _session.get(url, timeout=DEFAULT_TIMEOUT)

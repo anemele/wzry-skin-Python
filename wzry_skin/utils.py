@@ -1,10 +1,9 @@
 import time
-from dataclasses import dataclass
 from functools import wraps
 from pathlib import Path
 
 from .constants import DEFAULD_SAVEPATH, FILE_SAVEPATH
-from .logger import logger
+from .log import logger
 
 
 def timeit(func):
@@ -13,7 +12,7 @@ def timeit(func):
         start = time.perf_counter()
         result = func(*args, **kwargs)
         delta = time.perf_counter() - start
-        logger.info(f'Used time {delta:.3f}s')
+        logger.info(f'used time {delta:.3f}s')
 
         return result
 
@@ -38,10 +37,3 @@ def get_rootpath():
     rootpath = DEFAULD_SAVEPATH
     mkdir(rootpath)
     return rootpath
-
-
-@dataclass
-class Hero:
-    ename: int
-    cname: str
-    title: str
