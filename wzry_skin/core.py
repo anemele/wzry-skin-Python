@@ -1,5 +1,7 @@
 import asyncio
 import json
+import logging
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -7,11 +9,17 @@ import aiofiles
 import aiohttp
 from fake_useragent import FakeUserAgent
 
-from .log import logger
 from .parser import get_heropage, get_skinlist, get_skinurl
 from .utils import get_rootpath, mkdir, timeit
 
 FAU = FakeUserAgent()
+
+logging.basicConfig(
+    format='[%(levelname)s] %(message)s',
+    level=logging.INFO,
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__file__)
 
 
 def _random_ua():
@@ -45,8 +53,7 @@ async def get_skin_data(session: aiohttp.ClientSession, hero: Hero):
     async with session.get(url) as response:
         logger.debug(f'{url}: {response.status}')
         content = await response.read()
-    skinlist = get_skinlist(content)
-    return skinlist
+    return get_skinlist(content)
 
 
 async def download_skin(session: aiohttp.ClientSession, url: str, savepath: Path):
@@ -65,25 +72,29 @@ async def download_skin(session: aiohttp.ClientSession, url: str, savepath: Path
 async def get_hero_skin():
     async with aiohttp.ClientSession(headers=_random_ua()) as session:
         async for hero in get_hero_data():
-            yield hero, get_skin_data(session, hero),
+            yield hero, await get_skin_data(session, hero),
 
 
 async def main():
     rootpath = get_rootpath()
 
     async with aiohttp.ClientSession(headers=_random_ua()) as session:
-        async for hero, c_skin in get_hero_skin():
-            skinlist: list[str] = await c_skin
+        async for hero, skins in get_hero_skin():
             savepath = rootpath / f'{hero.cname}_{hero.title}'
             mkdir(savepath)
 
-            for i, skin in enumerate(skinlist):
-                img_save_path = savepath / f'{i+1}_{skin}.jpg'
+            tasks = []
+            i = 0
+            async for skin in skins:
+                i += 1
+                img_save_path = savepath / f'{i}_{skin}.jpg'
                 if img_save_path.exists():
                     logger.debug(f'exists {img_save_path}')
                     continue
-                url = get_skinurl(hero_id=hero.ename, skin_id=i + 1)
-                await download_skin(session, url, img_save_path)
+                url = get_skinurl(hero_id=hero.ename, skin_id=i)
+                task = download_skin(session, url, img_save_path)
+                tasks.append(task)
+            await asyncio.gather(*tasks)
 
 
 @timeit

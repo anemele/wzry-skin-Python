@@ -1,8 +1,15 @@
+import logging
+import sys
 import time
 from functools import wraps
 from pathlib import Path
 
-from .log import logger
+logging.basicConfig(
+    format='[%(levelname)s] %(message)s',
+    level=logging.INFO,
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__file__)
 
 
 def timeit(func):
